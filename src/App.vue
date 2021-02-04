@@ -15,7 +15,7 @@
     <input type="checkbox" v-model="responsive" /> Responsive
     <br />
     <div style="width:100%;overflow-x:scroll">
-      <div style="width:200%;margin-top: 10px;height:100%;">
+      <div style="width:100%;margin-top: 10px;height:100%;">
         <grid-layout
           :layout.sync="layout"
           :col-num="12"
@@ -29,7 +29,35 @@
           :max-rows="users.length + 1"
         >
           <grid-item
-            v-for="item in layout"
+            id="fixedclass"
+            v-for="item in layout.filter(filterDate)"
+            :static="item.static"
+            :max-h="1"
+            :x="item.x"
+            :y="item.y"
+            :w="item.w"
+            :h="item.h"
+            :i="item.i"
+            :key="item.i"
+          >
+            <span v-if="item.y == 0" class="text">{{ item.i }}</span>
+          </grid-item>
+
+          <grid-item
+            v-for="item in layout.filter(filterEvent)"
+            :static="item.static"
+            :max-h="1"
+            :x="item.x"
+            :y="item.y"
+            :w="item.w"
+            :h="item.h"
+            :i="item.i"
+            :key="item.i"
+          >
+          </grid-item>
+
+          <grid-item
+            v-for="item in layout.filter(filterUser)"
             :static="item.static"
             :max-h="1"
             :x="item.x"
@@ -57,6 +85,12 @@ export default {
   },
   data() {
     return {
+      draggable: true,
+      resizable: false,
+      responsive: false,
+      index: 0,
+      // usersLayout: [],
+      // datesLayout: [],
       layout: [
         // {"x":0,"y":0,"w":1,"h":1,"i":"0", static: true},
         // {"x":1,"y":0,"w":1,"h":1,"i":"1", static: true},
@@ -68,16 +102,42 @@ export default {
         // {"x":0,"y":2,"w":1,"h":1,"i":"7", static: true},
         // {"x":0,"y":3,"w":1,"h":1,"i":"8", static: true},
         // {"x":0,"y":4,"w":1,"h":1,"i":"9", static: true},
-        // {"x":0,"y":5,"w":1,"h":1,"i":"10", static: true},
+        // { x: 0, y: 5, w: 1, h: 1, i: "10", static: true },
         { x: 10, y: 4, w: 1, h: 1, i: "11", static: false },
-        { x: 0, y: 10, w: 1, h: 1, i: "12", static: false },
+        // { x: 0, y: 10, w: 1, h: 1, i: "12", static: false },
         { x: 2, y: 10, w: 1, h: 1, i: "13", static: false },
         { x: 4, y: 8, w: 1, h: 1, i: "14", static: false },
         { x: 6, y: 8, w: 1, h: 1, i: "15", static: false },
         { x: 8, y: 10, w: 1, h: 1, i: "16", static: false },
         { x: 10, y: 4, w: 1, h: 1, i: "17", static: false },
-        { x: 0, y: 9, w: 1, h: 1, i: "18", static: false },
+        // { x: 0, y: 9, w: 1, h: 1, i: "18", static: false },
         { x: 2, y: 6, w: 1, h: 1, i: "19", static: false },
+      ],
+      dates: [
+        {
+          wo_id: "97",
+          ps_date_entry: "2017-07-07",
+        },
+        {
+          wo_id: "68",
+          ps_date_entry: "2018-09-01",
+        },
+        {
+          wo_id: "68",
+          ps_date_entry: "2018-09-01",
+        },
+        {
+          wo_id: "68",
+          ps_date_entry: "2018-09-01",
+        },
+        {
+          wo_id: "68",
+          ps_date_entry: "2018-09-01",
+        },
+        {
+          wo_id: "68",
+          ps_date_entry: "2018-09-01",
+        },
       ],
       users: [
         {
@@ -125,17 +185,22 @@ export default {
             "Windows Server, Linux, VMware, CISCO, Reseaux, PHP, Python, LPI, Docker, Vagrant, DevOps",
         },
       ],
-      dates: [],
-      draggable: true,
-      resizable: false,
-      responsive: false,
-      index: 0,
     };
   },
   mounted() {
     this.usersAsY();
+    this.dateAsX();
   },
   methods: {
+    filterUser(e) {
+      return e.x === 0;
+    },
+    filterEvent(e) {
+      return e.x > 0 && e.y > 0;
+    },
+    filterDate(e) {
+      return e.y === 0;
+    },
     usersAsY() {
       const i = 1;
       this.users.forEach((u) => {
@@ -153,14 +218,15 @@ export default {
     },
     dateAsX() {
       const i = 1;
-      this.users.forEach((u) => {
-        u.y = 0;
-        u.x = this.users.indexOf(u) + 1;
-        u.i = u.co_name;
-        u.h = 1;
-        u.w = 1;
-        u.static = true;
-        this.layout.push(u);
+      this.dates.forEach((d) => {
+        d.y = 0;
+        d.x = this.dates.indexOf(d) + i;
+        d.i = this.dates.indexOf(d) + 1;
+        d.h = 1;
+        d.w = 1;
+        d.static = true;
+        this.layout.push(d);
+        console.log(this.datesLayout);
       });
       //{"x":0,"y":10,"w":1,"h":1,"i":"12", static: false},
     },
@@ -196,6 +262,22 @@ export default {
   height: 100%;
   width: 100%;
 }
+#fixedclass {
+  position: fixed;
+  left: 0;
+}
+.vue-grid-item.vue-grid-placeholder {
+  background: s;
+  opacity: 0.2;
+  transition-duration: 100ms;
+  z-index: 2;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
 .vue-grid-item .no-drag {
   height: 100%;
   width: 100%;
